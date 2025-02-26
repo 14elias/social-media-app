@@ -1,4 +1,4 @@
-import {Text,Flex,Box,VStack,Heading,HStack,Image,Button} from '@chakra-ui/react'
+import {Text,Flex,Box,VStack,Heading,HStack,Image,Button,Avatar} from '@chakra-ui/react'
 import {useState,useEffect} from 'react'
 import { get_user_post, get_user_profile_data, toggle_follow } from '../api/endpoints'
 import { SERVER_URL } from '../constants/constants'
@@ -77,9 +77,12 @@ const UserDetail=({username})=>{
     <VStack w='100%' alignItems='start' gap='40px'>
         <Heading>@{username}</Heading>
         <HStack gap='20px'>
-            <Box boxSize='150px' border='2px solid' borderColor='gray.700' bg='white' borderRadius='full' overflow='hidden' >
-                <Image src={ loading? '-' : `${SERVER_URL}${profileImage}`} boxSize='100%' objectFit='-moz-initial'/>
-            </Box>
+            <Avatar 
+            src={loading ? '' : `${SERVER_URL}${profileImage}`} 
+            name={username} 
+            size="2xl" // Keeps the size large without shrinking
+            />
+
             <VStack gap='20px'>
                 <HStack gap='20px' fontSize='18px'>
                     <VStack gap='20px'>

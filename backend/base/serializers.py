@@ -45,3 +45,8 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.user.username
     def get_formatted_data(self,obj):
         return obj.created_at.strftime("%d %b %y")
+    
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Myuser
+        fields=['username','profile_image','first_name','last_name','bio','email']

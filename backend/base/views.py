@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated,AllowAny
-from .serializers import CreateUserProfileSerializer, MyUserProfileSerializer, PostSerializer
+from .serializers import CreateUserProfileSerializer, MyUserProfileSerializer, PostSerializer, UserSerializer
 from .models import Myuser, Post
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -20,9 +20,18 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
             access_token=token['access']
             refresh_token=token['refresh']
+            username = request.data['username']
 
             res=Response()
-            res.data={'success':True}
+            user=Myuser.objects.get(username=username)
+
+            res.data={'success':True,'user':{
+                'username':user.username,
+                'bio':user.bio,
+                'email':user.email,
+                'first_name':user.first_name,
+                'last_name':user.last_name
+            }}
 
             res.set_cookie(
                 key='access_token',
@@ -206,3 +215,39 @@ def get_posts(request):
 def get_username(request):
     user=request.user.username
     return Response(user)
+
+@api_view(['GET'])
+@permission_classes({IsAuthenticated})
+def search_user(request):
+    query=request.query_params.get('query','')
+    user=Myuser.objects.filter(username__icontains=query)
+    serializer=UserSerializer(user,many=True)
+    return Response(serializer.data)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    data=request.data
+
+    try:
+        user=Myuser.objects.get(username=request.user.username)
+    except Myuser.DoesNotExist:
+        return Response({'error':'user does not exist'})
+    
+    serializer=UserSerializer(user,data,partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({**serializer.data,'success':True})
+    return Response({**serializer.errors,'success':False})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        res=Response()
+        res.data={'success':True}
+        res.delete_cookie('access_token' , path='/' , samesite='None')
+        res.delete_cookie('refresh_token' , path='/' , samesite='None')
+        return res
+    except:
+        return Response({'success':False})

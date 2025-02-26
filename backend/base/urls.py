@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import createPost, get_post_view, get_posts, get_user_profile_data,CustomTokenObtainPairView,CustomTokenRefreshView,create_user_profile,authenticated, get_username, toggleFollow, toggleLike
+from .views import createPost, get_post_view, get_posts, get_user_profile_data,CustomTokenObtainPairView,CustomTokenRefreshView,create_user_profile,authenticated, get_username, logout, search_user, toggleFollow, toggleLike, update_user_profile
 urlpatterns =[
     path('user_data/<str:pk>/',get_user_profile_data),
     path('create_user/',create_user_profile),
@@ -14,4 +14,7 @@ urlpatterns =[
     path('create_post/',createPost),
     path('get_posts/',get_posts),
     path('get_username/',get_username),
+    path('search/',search_user),
+    path('update/',update_user_profile),
+    path('logout/',logout),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

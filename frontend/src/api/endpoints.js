@@ -94,3 +94,18 @@ export const get_username=async()=>{
     const response=await api.get('/get_username/')
     return response.data
 }
+
+export const search_user=async(search)=>{
+    const response=await api.get(`/search/?query=${search}`)
+    return response.data
+}
+
+export const logout=async()=>{
+    const response= await api.post('/logout/')
+    return response.data
+}
+
+export const update_user_profile=async(value)=>{
+    const response=await api.patch('/update/',value,{headers:{'Content-Type':'multipart/form-data'}})
+    return response.data
+}

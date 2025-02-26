@@ -5,6 +5,10 @@ import { IoIosAddCircle } from "react-icons/io";
 import { IoMdHome } from "react-icons/io";
 import { get_username } from "../api/endpoints";
 import { useEffect, useState } from "react";
+import { IoSearchSharp } from "react-icons/io5";
+import { RiSettings2Line } from "react-icons/ri";
+
+
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -70,6 +74,22 @@ const Navbar = () => {
             color="white"
             _hover={{ bg: "blue.600" }}
             onClick={() => handleNavigation(`${username}`)}
+          />
+          <IconButton
+            aria-label="Profile"
+            icon={<IoSearchSharp size='24px'/>}
+            variant="ghost"
+            color="white"
+            _hover={{ bg: "blue.600" }}
+            onClick={() => handleNavigation(`search`)}
+          />
+          <IconButton
+            aria-label="Profile"
+            icon={<RiSettings2Line size='24px'/>}
+            variant="ghost"
+            color="white"
+            _hover={{ bg: "blue.600" }}
+            onClick={() => handleNavigation(`setting`)}
           />
         </HStack>
       </HStack>
