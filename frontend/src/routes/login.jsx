@@ -1,20 +1,17 @@
 import { VStack, Flex, FormLabel, Button, FormControl, Input, Heading, Box ,Text} from "@chakra-ui/react";  
-import { login } from "../api/endpoints";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/useAuth";
 function Login() {
     const [username,setusername]=useState('')
     const [password,setpassword]=useState('')
 
     const nav=useNavigate()
 
-    const handlelogin=async()=>{
-        const data = await login(username,password);
-        if (data.success){
-            nav(`/${username}`)
-        }else{
-            setErrorMessage('Invalid username or password');
-        }
+    const {auth_login}=useAuth();
+    const handlelogin=()=>{
+
+        auth_login(username,password)
     }
 
     const handleNav=()=>{
@@ -24,7 +21,7 @@ function Login() {
   return (
     <Flex align="center" justify="center" h="100vh" bg="gray.100">  
       <Box  
-        w={{ base: "90%", md: "400px", lg: "500px" }}  // 👈 Wider on large screens  
+        w={{ base: "90%", md: "400px", lg: "500px" }}  // Wider on large screens  
         p={8}  
         boxShadow="xl"  
         borderRadius="lg"  

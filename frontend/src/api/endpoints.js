@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { SERVER_URL } from '../constants/constants'
-import { useNavigate } from 'react-router-dom'
 
 const BASE_URL=SERVER_URL
 const api=axios.create(
@@ -57,8 +56,41 @@ export const create_user= async (username,password,email,first_name,last_name)=>
         return response.data
     }catch (error) {
         console.error("Error creating user:", error.response?.data || error.message);
-        return { error: error.response?.data || "User creation failed" }; // ✅ Return meaningful error
+        return { error: error.response?.data || "User creation failed" }; 
     }
 
 }
 
+export const get_auth=async ()=>{
+    const response= await api.get(`/authenticated/`);
+    return response.data
+}
+
+export const toggle_follow= async (username)=>{
+        const response= await api.post('/toggle_follow/',{username});
+        return response.data 
+}
+
+export const get_user_post=async(username)=>{
+    const response= await api.get(`/posts/${username}`)
+    return response.data
+}
+
+export const toggle_like= async (id)=>{
+    const response= await api.post('/toggle_like/',{id})
+    return response.data
+}
+export const create_post= async (description)=>{
+    const response= await api.post('/create_post/',{description})
+    return response.data
+}
+
+export const get_post =async(num)=>{
+    const response=await api.get(`/get_posts/?page=${num}`)
+    return response.data
+}
+
+export const get_username=async()=>{
+    const response=await api.get('/get_username/')
+    return response.data
+}

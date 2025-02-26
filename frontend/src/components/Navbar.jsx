@@ -1,23 +1,80 @@
-import {Text,Flex,HStack} from '@chakra-ui/react'
-import { useNavigate } from 'react-router-dom'
+import { Text, Flex, HStack, IconButton, Box } from "@chakra-ui/react";
+import { useNavigate } from "react-router-dom";
 import { IoPersonCircleOutline } from "react-icons/io5";
+import { IoIosAddCircle } from "react-icons/io";
+import { IoMdHome } from "react-icons/io";
+import { get_username } from "../api/endpoints";
+import { useEffect, useState } from "react";
 
-const Navbar=()=>{
+const Navbar = () => {
+  const navigate = useNavigate();
 
-   const navigate=useNavigate();
-   const handleNavigation=(route)=>{
-    navigate(`/${route}`)
-}
-    return (
-        <Flex w='100%' h='90%' bg='blue.600' justifyContent='center' alignItems='center'>
-            <HStack w='80%' justifyContent='space-between'color='white' >
-                <Text fontSize='24px' fontWeight='bold'>SocialHub</Text>
-                <HStack>
-                   <Text onClick={(route)=>handleNavigation('/elias')} cursor={'pointer'}><IoPersonCircleOutline size='20px'/></Text> 
-                </HStack>
-            </HStack>
-        </Flex>
-    )
-}
+  const handleNavigation = (route) => {
+    navigate(`/${route}`);
+  };
 
-export default Navbar
+  const [username,setUsername]=useState('')
+
+  const fetchData=async()=>{
+    const data=await get_username()
+    setUsername(data)
+  }
+  useEffect(()=>{
+    try{
+        fetchData()
+    }catch{
+        return({'error':'error fetching data'})
+    }
+  },[])
+
+  return (
+    <Flex
+      w="100%"
+      h="60px"
+      bgGradient="linear(to-r, blue.700, blue.500)"
+      justifyContent="center"
+      alignItems="center"
+      position="fixed"
+      top="0"
+      zIndex="1000"
+      boxShadow="md"
+    >
+      <HStack w="90%" maxW="1200px" justifyContent="space-between" color="white">
+        {/* Logo */}
+        <Text fontSize="24px" fontWeight="bold" cursor="pointer">
+          SocialHub
+        </Text>
+
+        {/* Icons */}
+        <HStack gap="20px">
+          <IconButton
+            aria-label="Home"
+            icon={<IoMdHome size="24px" />}
+            variant="ghost"
+            color="white"
+            _hover={{ bg: "blue.600" }}
+            onClick={() => handleNavigation("")}
+          />
+          <IconButton
+            aria-label="Create Post"
+            icon={<IoIosAddCircle size="24px" />}
+            variant="ghost"
+            color="white"
+            _hover={{ bg: "blue.600" }}
+            onClick={() => handleNavigation("create/post")}
+          />
+          <IconButton
+            aria-label="Profile"
+            icon={<IoPersonCircleOutline size="24px" />}
+            variant="ghost"
+            color="white"
+            _hover={{ bg: "blue.600" }}
+            onClick={() => handleNavigation(`${username}`)}
+          />
+        </HStack>
+      </HStack>
+    </Flex>
+  );
+};
+
+export default Navbar;

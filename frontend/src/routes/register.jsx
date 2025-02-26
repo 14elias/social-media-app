@@ -23,7 +23,6 @@ const Register = () => {
                 if (result.error) {
                     setError(result.error);
                 } else {
-                    alert("User created successfully!");
                     nav("/login");
                 }
             } catch (error) {

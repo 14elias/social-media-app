@@ -10,3 +10,12 @@ class Myuser(AbstractUser):
 
     def __str__(self):
         return self.username
+
+class Post(models.Model):
+    user=models.ForeignKey(Myuser,on_delete=models.CASCADE,related_name='posts')
+    description=models.TextField()
+    created_at=models.DateTimeField(auto_now_add=True)
+    likes=models.ManyToManyField(Myuser,related_name='post_like')
+
+    def __str__(self):
+        return self.description

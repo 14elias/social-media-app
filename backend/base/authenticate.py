@@ -11,4 +11,3 @@ class CustomAuthentication(JWTAuthentication):
             return (user,validated_token)
         except:
             return None
-        
