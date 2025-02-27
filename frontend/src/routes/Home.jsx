@@ -45,6 +45,7 @@ const Home = () => {
                         <Post
                             key={post.id}
                             id={post.id}
+                            profile_image={post.profile_image}
                             username={post.username}
                             description={post.description}
                             formatted_data={post.formatted_data}

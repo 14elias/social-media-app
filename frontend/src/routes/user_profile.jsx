@@ -1,5 +1,6 @@
 import {Text,Flex,Box,VStack,Heading,HStack,Image,Button,Avatar} from '@chakra-ui/react'
 import {useState,useEffect} from 'react'
+import { useNavigate } from 'react-router-dom'
 import { get_user_post, get_user_profile_data, toggle_follow } from '../api/endpoints'
 import { SERVER_URL } from '../constants/constants'
 import Post from '../components/Post'
@@ -72,6 +73,12 @@ const UserDetail=({username})=>{
             setFollowing(false)
         }
     }
+
+    const nav=useNavigate()
+
+    const handleedit=()=>{
+        nav(`/setting`)
+    }
     
     return (
     <VStack w='100%' alignItems='start' gap='40px'>
@@ -96,7 +103,7 @@ const UserDetail=({username})=>{
                 </HStack>
                 {
                     isOurProfile?
-                      <Button w='100%'>Edit Profile</Button>
+                      <Button w='100%' onClick={handleedit}>Edit Profile</Button>
                     :
                     <Button w='100%' colorScheme='blue' onClick={togglehandle}>{following?'unfollow':'follow'}</Button>
                 }

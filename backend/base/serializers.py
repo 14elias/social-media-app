@@ -34,9 +34,10 @@ class PostSerializer(serializers.ModelSerializer):
     likes_count=serializers.SerializerMethodField()
     username=serializers.SerializerMethodField()
     formatted_data=serializers.SerializerMethodField()
+    profile_image=serializers.SerializerMethodField()
     class Meta:
         model=Post
-        fields=['id','username','description','formatted_data','likes','likes_count']
+        fields=['id','username','description','formatted_data','likes','likes_count','profile_image']
     
     def get_likes_count(self,obj):
         return obj.likes.count()
@@ -45,6 +46,10 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.user.username
     def get_formatted_data(self,obj):
         return obj.created_at.strftime("%d %b %y")
+    def get_profile_image(self, obj): 
+        if obj.user.profile_image:
+            return obj.user.profile_image.url
+        return None
     
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

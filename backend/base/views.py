@@ -199,7 +199,7 @@ def get_posts(request):
     paginator=PageNumberPagination()
     paginator.page_size=10
     result_page=paginator.paginate_queryset(posts,request)
-    serializer=PostSerializer(result_page,many=True)
+    serializer=PostSerializer(result_page,many=True,context={'request':request})
     data=[]
     for post in serializer.data:
         new_post={}

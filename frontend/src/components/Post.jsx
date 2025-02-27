@@ -1,9 +1,11 @@
-import { VStack, Text, HStack, Flex, IconButton, Box } from "@chakra-ui/react";
+import { VStack, Text, HStack, Flex, IconButton, Box, Avatar } from "@chakra-ui/react";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import { toggle_like } from "../api/endpoints";
+import { useNavigate } from "react-router-dom";
+import { SERVER_URL } from "../constants/constants";
 
-function Post({id, username, description, formatted_data, likes_count,liked }) {
+function Post({id, username, description, formatted_data, likes_count,liked,profile_image }) {
     const [clientliked, setClientLiked] = useState(liked);
     const [likes, setLikes] = useState(likes_count);
 
@@ -19,6 +21,11 @@ function Post({id, username, description, formatted_data, likes_count,liked }) {
         }
     };
 
+    const nav = useNavigate()
+    const handleAvaterClick=()=>{
+        nav(`/${username}`)
+    }
+
     return (
         <VStack
             w="380px"
@@ -31,6 +38,14 @@ function Post({id, username, description, formatted_data, likes_count,liked }) {
         >
             {/* Username Section (Smaller & Compact) */}
             <HStack w="100%" bg="gray.100" borderTopRadius="12px" p="6px 16px">
+                <Avatar 
+                    size="md" 
+                    src={`${SERVER_URL}${profile_image}`}  // No need for SERVER_URL
+                    name={username} 
+                    cursor="pointer"
+                    onClick={handleAvaterClick}
+                />
+
                 <Text fontWeight="bold" fontSize="md">@{username}</Text>
             </HStack>
 

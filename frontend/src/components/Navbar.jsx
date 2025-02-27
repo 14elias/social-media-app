@@ -29,7 +29,7 @@ const Navbar = () => {
     }catch{
         return({'error':'error fetching data'})
     }
-  },[])
+  },[username])
 
   return (
     <Flex

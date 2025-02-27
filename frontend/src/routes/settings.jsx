@@ -2,6 +2,8 @@ import { Button, Flex, FormControl, FormLabel, Heading, Input, VStack, Box } fro
 import {useState} from 'react'
 import { logout, update_user_profile } from "../api/endpoints";
 import { useNavigate } from "react-router-dom";
+import { FaSignOutAlt } from "react-icons/fa";
+
 const Setting = () => {
 
     const storage=JSON.parse(localStorage.getItem('userdata'))
@@ -24,6 +26,7 @@ const Setting = () => {
             await update_user_profile({'username':username,'email':email,'first_name':firstname,'last_name':lastname,'bio':bio,'profile_image':profileimage})
             localStorage.setItem('userdata',JSON.stringify({'username':username,'email':email,'first_name':firstname,'last_name':lastname,'bio':bio,}))
             alert('updated successfully')
+            nav(`/${username}`)
         }catch{
             alert('updating failed')
         }
@@ -40,7 +43,11 @@ const Setting = () => {
                         </FormControl>
                         <FormControl>
                             <FormLabel fontWeight="bold">Username</FormLabel>
-                            <Input type='text' onChange={(e)=>setUsername(e.target.value)} placeholder="Enter username" focusBorderColor="teal.400" value={username}/>
+                            <Input type='text' onChange={(e)=>setUsername(e.target.value)}  focusBorderColor="teal.400" value={username}/>
+                        </FormControl>
+                        <FormControl>
+                            <FormLabel fontWeight="bold">email</FormLabel>
+                            <Input type='text' onChange={(e)=>setemail(e.target.value)}  focusBorderColor="teal.400" value={email}/>
                         </FormControl>
                         <FormControl>
                             <FormLabel fontWeight="bold">First Name</FormLabel>
@@ -56,7 +63,21 @@ const Setting = () => {
                         </FormControl>
                         <Button colorScheme="teal" w="full" onClick={handleupdate}>Save Changes</Button>
                     </VStack>
-                    <Button colorScheme="red" variant="outline" w="full" onClick={handlelogout}>Logout</Button>
+                    <Button
+                        colorScheme="red"
+                        variant="solid"
+                        leftIcon={<FaSignOutAlt />}
+                        onClick={handlelogout}
+                        _hover={{ bg: "red.600" }}
+                        _active={{ bg: "red.700" }}
+                        borderRadius="md"
+                        p={3}
+                        fontSize="md"
+                        w="fit-content" // This makes the button wrap around its content
+                        alignSelf="center" // Centers it within the VStack
+                    >
+                        Logout
+                    </Button>
                 </VStack>
             </Box>
         </Flex>
