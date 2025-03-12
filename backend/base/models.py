@@ -14,6 +14,7 @@ class Myuser(AbstractUser):
 class Post(models.Model):
     user=models.ForeignKey(Myuser,on_delete=models.CASCADE,related_name='posts')
     description=models.TextField()
+    image=models.ImageField(upload_to='post_image/',blank=True,null=True)
     created_at=models.DateTimeField(auto_now_add=True)
     likes=models.ManyToManyField(Myuser,related_name='post_like')
 

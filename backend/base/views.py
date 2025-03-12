@@ -213,8 +213,8 @@ def get_posts(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_username(request):
-    user=request.user.username
-    return Response(user)
+    username=request.user.username
+    return Response({'username':username})
 
 @api_view(['GET'])
 @permission_classes({IsAuthenticated})

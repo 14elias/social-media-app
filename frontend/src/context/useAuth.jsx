@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
                     "last_name":data.user.last_name,
                 }
                 localStorage.setItem('userdata',JSON.stringify(userdata))
-                navigate(`/${username}`); //  Corrected navigation
+                navigate(`/`); //  Corrected navigation
             } else {
                 setErrorMessage("Invalid username or password");
             }

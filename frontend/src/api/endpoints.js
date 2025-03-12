@@ -92,7 +92,7 @@ export const get_post =async(num)=>{
 
 export const get_username=async()=>{
     const response=await api.get('/get_username/')
-    return response.data
+    return response.data.username
 }
 
 export const search_user=async(search)=>{

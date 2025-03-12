@@ -15,7 +15,7 @@ const UserProfile=()=>{
 
     useEffect(()=>{
         setusername(get_user_name_from_url())
-    },[])
+    },[username])
 
     return (
     <Flex w='100%' justifyContent='center'>
@@ -130,7 +130,7 @@ const UserPost=({username})=>{
         }
 
         fetchdata()
-    },[])
+    },[username])
 
     return(
         <Flex w='100%' wrap='wrap' gap='40px' pb='50px'>

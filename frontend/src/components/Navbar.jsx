@@ -16,7 +16,10 @@ const Navbar = () => {
   const handleNavigation = (route) => {
     navigate(`/${route}`);
   };
+  
 
+  // const storage=JSON.parse(localStorage.getItem('userdata'))
+  // let username = localStorage.getItem("username")
   const [username,setUsername]=useState('')
 
   const fetchData=async()=>{
@@ -29,7 +32,7 @@ const Navbar = () => {
     }catch{
         return({'error':'error fetching data'})
     }
-  },[username])
+  },[])
 
   return (
     <Flex
