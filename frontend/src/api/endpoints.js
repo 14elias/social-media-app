@@ -80,8 +80,10 @@ export const toggle_like= async (id)=>{
     const response= await api.post('/toggle_like/',{id})
     return response.data
 }
-export const create_post= async (description)=>{
-    const response= await api.post('/create_post/',{description})
+export const create_post= async (formData)=>{
+    const response= await api.post('/create_post/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })
     return response.data
 }
 

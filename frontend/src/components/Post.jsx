@@ -1,30 +1,30 @@
-import { VStack, Text, HStack, Flex, IconButton, Box, Avatar } from "@chakra-ui/react";
+import { VStack, Text, HStack, Flex, IconButton, Box, Avatar, Image, Button } from "@chakra-ui/react";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import { toggle_like } from "../api/endpoints";
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/constants";
 
-function Post({id, username, description, formatted_data, likes_count,liked,profile_image }) {
+function Post({ id, username, description, formatted_data, likes_count, liked, profile_image, image }) {
     const [clientliked, setClientLiked] = useState(liked);
     const [likes, setLikes] = useState(likes_count);
+    const [expanded, setExpanded] = useState(false);
 
     const handleLike = async () => {
-        const data= await toggle_like(id)
-        if (data.now_liked){
-            setClientLiked(true)
-            setLikes(prev=>prev+1)
-        }
-        else{
-            setClientLiked(false)
-            setLikes(prev=>prev-1)
+        const data = await toggle_like(id);
+        if (data.now_liked) {
+            setClientLiked(true);
+            setLikes(prev => prev + 1);
+        } else {
+            setClientLiked(false);
+            setLikes(prev => prev - 1);
         }
     };
 
-    const nav = useNavigate()
-    const handleAvaterClick=()=>{
-        nav(`/${username}`)
-    }
+    const navigate = useNavigate();
+    const handleAvatarClick = () => {
+        navigate(`/${username}`);
+    };
 
     return (
         <VStack
@@ -36,25 +36,41 @@ function Post({id, username, description, formatted_data, likes_count,liked,prof
             spacing="3"
             bg="white"
         >
-            {/* Username Section (Smaller & Compact) */}
+            {/* Username Section */}
             <HStack w="100%" bg="gray.100" borderTopRadius="12px" p="6px 16px">
                 <Avatar 
                     size="md" 
-                    src={`${SERVER_URL}${profile_image}`}  // No need for SERVER_URL
+                    src={`${SERVER_URL}${profile_image}`}  
                     name={username} 
                     cursor="pointer"
-                    onClick={handleAvaterClick}
+                    onClick={handleAvatarClick}
                 />
-
                 <Text fontWeight="bold" fontSize="md">@{username}</Text>
             </HStack>
 
-            {/* Post Content */}
-            <Flex w="100%" minH="300px" justifyContent="center" alignItems="center" px="4">
-                <Text fontSize="md" textAlign="center" color="gray.700">{description}</Text>
-            </Flex>
+            {/* Description (Truncated with "See More") */}
+            <Box w="100%" px="4">
+                <Text fontSize="md" color="gray.700">
+                    {expanded ? description : `${description.slice(0, 100)}...`}
+                </Text>
+                {description.length > 100 && (
+                    <Button 
+                        variant="link" 
+                        color="blue.500" 
+                        size="sm" 
+                        onClick={() => setExpanded(!expanded)}
+                    >
+                        {expanded ? "See Less" : "See More"}
+                    </Button>
+                )}
+            </Box>
 
-            {/* Like Button & Date (More Compact) */}
+            {/* Image Section */}
+            <Box w="100%">
+                <Image src={`${SERVER_URL}${image}`} borderRadius="8px" />
+            </Box>
+
+            {/* Like Button & Date */}
             <HStack w="100%" justifyContent="space-between" p="6px 16px" bg="gray.50" borderBottomRadius="12px">
                 <Text fontSize="xs" color="gray.500">{formatted_data}</Text>
                 <HStack>

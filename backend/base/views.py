@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated,AllowAny
-from .serializers import CreateUserProfileSerializer, MyUserProfileSerializer, PostSerializer, UserSerializer
+from .serializers import CreatePostSerializer, CreateUserProfileSerializer, MyUserProfileSerializer, PostSerializer, UserSerializer
 from .models import Myuser, Post
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -177,8 +177,8 @@ def toggleLike(request):
 def createPost(request):
     try:
         data = request.data
-        post = Post.objects.create(user=request.user, description=data['description'])  # Fixed typo
-        serializer = PostSerializer(post)
+        serializer = CreatePostSerializer(context={'user': request.user},data=data)
+        serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     except KeyError:

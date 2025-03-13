@@ -82,7 +82,7 @@ const UserDetail=({username})=>{
     
     return (
     <VStack w='100%' alignItems='start' gap='40px'>
-        <Heading>@{username}</Heading>
+        <Heading pt='15px'>@{username}</Heading>
         <HStack gap='20px'>
             <Avatar 
             src={loading ? '' : `${SERVER_URL}${profileImage}`} 
@@ -137,7 +137,7 @@ const UserPost=({username})=>{
             {loading ? 
              <Text>Loading...</Text> 
             :  
-             posts.map((post)=>{return <Post key={post.id} id={post.id} username={post.username} description={post.description} formatted_data={post.formatted_data} liked={post.liked} likes_count={post.likes_count}/>})
+             posts.map((post)=>{return <Post key={post.id} id={post.id} username={post.username} description={post.description} formatted_data={post.formatted_data} liked={post.liked} likes_count={post.likes_count} image={post.image}/>})
             }
         </Flex>
     )

@@ -32,7 +32,9 @@ const Home = () => {
     useEffect(() => {
         fetchData();
     }, []);
-
+    for (const post of posts){
+        console.log(post.profile_image)
+    }
     return (
         <Flex w="100%" justifyContent="center" pt="20px">
             <VStack maxW="600px" w="100%" spacing={6} alignItems="start">
@@ -51,6 +53,7 @@ const Home = () => {
                             formatted_data={post.formatted_data}
                             liked={post.liked}
                             likes_count={post.likes_count}
+                            image={post.image}
                         />
                     ))
                 ) : (

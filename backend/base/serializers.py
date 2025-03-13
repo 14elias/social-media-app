@@ -35,6 +35,7 @@ class PostSerializer(serializers.ModelSerializer):
     username=serializers.SerializerMethodField()
     formatted_data=serializers.SerializerMethodField()
     profile_image=serializers.SerializerMethodField()
+    image=serializers.SerializerMethodField()
     class Meta:
         model=Post
         fields=['id','username','description','formatted_data','likes','likes_count','profile_image','image']
@@ -50,8 +51,20 @@ class PostSerializer(serializers.ModelSerializer):
         if obj.user.profile_image:
             return obj.user.profile_image.url
         return None
-    
+    def get_image(self,obj):
+        if obj.image:  
+            return obj.image.url  
+        return None
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=Myuser
         fields=['username','profile_image','first_name','last_name','bio','email']
+
+class CreatePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Post
+        fields=['image','description']
+    def create(self, validated_data):
+        user=self.context['user']
+        post=Post.objects.create(user=user,**validated_data)
+        return post
