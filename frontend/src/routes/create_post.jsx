@@ -16,14 +16,14 @@ const CreatePost = () => {
     };
 
     const handleSubmit = async () => {
-        const formData = new FormData();
-        formData.append("description", description);
-        if (image) {
-            formData.append("image", image); // Append image if available
-        }
-
         try {
-            await create_post(formData); // Pass form data to the API
+            const formData = new FormData();
+            formData.append('description', description);
+            if (image) {
+                formData.append('image', image);
+            }
+    
+            await create_post(formData); // Pass FormData to the API
             setDescription('');
             setImage(null); // Clear image after post submission
             nav('/'); // Navigate to home after posting

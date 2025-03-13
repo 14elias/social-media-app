@@ -176,9 +176,10 @@ def toggleLike(request):
 @permission_classes([IsAuthenticated])
 def createPost(request):
     try:
-        data = request.data
-        serializer = CreatePostSerializer(context={'user': request.user},data=data)
+        print(request.data)
+        serializer = CreatePostSerializer(context={'user': request.user},data=request.data)
         serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     except KeyError:

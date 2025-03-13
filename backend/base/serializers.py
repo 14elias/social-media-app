@@ -66,5 +66,8 @@ class CreatePostSerializer(serializers.ModelSerializer):
         fields=['image','description']
     def create(self, validated_data):
         user=self.context['user']
-        post=Post.objects.create(user=user,**validated_data)
-        return post
+        description=validated_data.pop('description')
+        if validated_data.get('image'):
+            image=validated_data.pop('image')
+        return Post.objects.create(user=user,description=description,image=image)
+        
