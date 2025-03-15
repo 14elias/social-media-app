@@ -279,3 +279,19 @@ class RetrieveCommentView(APIView):
         comment=post.comments.get(id=self.kwargs['comment_id'])
         serializer=CommentSerializer(comment,many=False)
         return Response(serializer.data)
+    def delete(self,request,*args,**kwargs):
+        post=Post.objects.get(id=self.kwargs['pk'])
+        comment=post.comments.get(id=self.kwargs['comment_id'])
+        if comment.user!=request.user:
+            return Response({'error':'you are not allowed to delete this comment'})
+        comment.delete()
+        return Response({'success':True},status=status.HTTP_204_NO_CONTENT)
+    def patch(self,request,*args,**kwargs):
+        post=Post.objects.get(id=self.kwargs['pk'])
+        comment=post.comments.get(id=self.kwargs['comment_id'])
+        if comment.user!=request.user:
+            return Response({'error':'you are not allowed to edit this comment'})
+        serializer=CommentSerializer(comment,data=request.data,partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
