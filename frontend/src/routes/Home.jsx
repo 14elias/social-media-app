@@ -52,6 +52,7 @@ const Home = () => {
                             formatted_data={post.formatted_data}
                             liked={post.liked}
                             likes_count={post.likes_count}
+                            comment_count={post.comment_count}
                             image={post.image}
                         />
                     ))

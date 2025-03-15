@@ -116,3 +116,8 @@ export const fetch_comments=async(id)=>{
     const response=await api.get(`/posts_by_id/${id}/comment/`)
     return response.data
 }
+
+export const add_comment=async(id,text)=>{
+    const response=await api.post(`/posts_by_id/${id}/comment/`,{text})
+    return response.data
+}

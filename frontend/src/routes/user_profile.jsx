@@ -137,7 +137,10 @@ const UserPost=({username})=>{
             {loading ? 
              <Text>Loading...</Text> 
             :  
-             posts.map((post)=>{return <Post key={post.id} id={post.id} username={post.username} description={post.description} formatted_data={post.formatted_data} liked={post.liked} likes_count={post.likes_count} image={post.image}/>})
+             posts.map((post)=>{
+                return <Post key={post.id} id={post.id} username={post.username} description={post.description} formatted_data={post.formatted_data} 
+                liked={post.liked} likes_count={post.likes_count} image={post.image} comment_count={post.comment_count}/>
+            })
             }
         </Flex>
     )

@@ -11,7 +11,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-
+import json
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self,request ,*args,**kwargs):
@@ -256,6 +256,7 @@ def logout(request):
 class CommentView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request,*args,**kwargs):
+        print(json.dumps(request.data, indent=4))
         post=get_object_or_404(Post,id=self.kwargs['pk'])
         serializer=CommentSerializer(data=request.data,context={'user':request.user,'post':post})
         serializer.is_valid(raise_exception=True)

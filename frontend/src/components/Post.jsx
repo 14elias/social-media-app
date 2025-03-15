@@ -2,11 +2,11 @@ import { VStack, Text, HStack, Flex, IconButton, Box, Avatar, Image, Button, Inp
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import { BiComment } from "react-icons/bi";
 import React, { useState, useEffect } from "react";
-import { toggle_like,fetch_comments} from "../api/endpoints"; 
+import { toggle_like,fetch_comments,add_comment} from "../api/endpoints"; 
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/constants";
 
-function Post({ id, username, description, formatted_data, likes_count, liked, profile_image, image }) {
+function Post({ id, username, description, formatted_data, likes_count, liked, profile_image, image,comment_count }) {
     const [clientLiked, setClientLiked] = useState(liked);
     const [likes, setLikes] = useState(likes_count);
     const [expanded, setExpanded] = useState(false);
@@ -38,12 +38,12 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
         setComments(data);
     };
 
-    // const handleCommentSubmit = async () => {
-    //     if (!commentText.trim()) return;
-    //     const newComment = await add_comment(id, commentText); // API call to add comment
-    //     setComments([...comments, newComment]); // Update state with new comment
-    //     setCommentText(""); // Clear input field
-    // };
+    const handleCommentSubmit = async () => {
+        if (!commentText.trim()) return;
+        const newComment = await add_comment(id, commentText); // API call to add comment
+        setComments([...comments, newComment]); // Update state with new comment
+        setCommentText(""); // Clear input field
+    };
 
     const handleAvatarClick = () => {
         navigate(`/${username}`);
@@ -104,6 +104,7 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                         size="md"
                         _hover={{ transform: "scale(1.1)" }}
                     />
+                    <Text fontSize="sm">{comment_count} {comment_count === 1 ? "Comment" : "Comments"}</Text>
                 </HStack>
             </HStack>
 
@@ -112,11 +113,11 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                 <VStack w="100%" align="start" p="3">
                     <Text fontWeight="bold">Comments:</Text>
                     <Box w="100%" maxH="200px" overflowY="auto">
-                        {comments.map((comment, index) => (
-                            <HStack key={index} align="start" spacing="2" p="2">
+                        {comments.map((comment) => (
+                            <HStack key={comment.id} align="start" spacing="2" p="2">
                                 <Avatar size="sm" src={`${SERVER_URL}${comment.user.profile_image}`} />
                                 <Box>
-                                    <Text fontWeight="bold">@{comment.user.username}</Text>
+                                    <Text fontWeight="bold">@{comment.user}</Text>
                                     <Text>{comment.text}</Text>
                                 </Box>
                             </HStack>
@@ -130,7 +131,7 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                             onChange={(e) => setCommentText(e.target.value)}
                             size="sm"
                         />
-                        <Button size="sm" colorScheme="blue" >
+                        <Button size="sm" colorScheme="blue" onClick={handleCommentSubmit}>
                             Comment
                         </Button>
                     </HStack>
