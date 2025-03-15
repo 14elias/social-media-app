@@ -1,11 +1,13 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import createPost, get_post_view, get_posts, get_user_profile_data,CustomTokenObtainPairView,CustomTokenRefreshView,create_user_profile,authenticated, get_username, logout, search_user, toggleFollow, toggleLike, update_user_profile
+from .views import CommentView, RetrievePost, createPost, get_post_view, get_posts, get_user_profile_data,CustomTokenObtainPairView,CustomTokenRefreshView,create_user_profile,authenticated, get_username, logout, search_user, toggleFollow, toggleLike, update_user_profile
 urlpatterns =[
     path('user_data/<str:pk>/',get_user_profile_data),
     path('create_user/',create_user_profile),
     path('posts/<str:pk>/',get_post_view),
+    path('posts_by_id/<int:pk>/',RetrievePost.as_view()),
+    path('posts_by_id/<int:pk>/comment/',CommentView.as_view()),
     path('authenticated/',authenticated),
     path('token/',CustomTokenObtainPairView.as_view()),
     path('token/refresh/',CustomTokenRefreshView.as_view()),

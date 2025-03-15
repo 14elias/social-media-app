@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from .models import Myuser, Post
+from .models import Myuser, Post,Comment
 
 class MyUserProfileSerializer(serializers.ModelSerializer):
     follower_count=serializers.SerializerMethodField()
@@ -71,3 +71,12 @@ class CreatePostSerializer(serializers.ModelSerializer):
             image=validated_data.pop('image')
         return Post.objects.create(user=user,description=description,image=image)
         
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Comment
+        fields=['user','text','created_at','post']
+        read_only_fields=['user','created_at','post']
+    def create(self, validated_data):
+        user=self.context['user']
+        post=self.context['post']
+        return Comment.objects.create(user=user,post=post,**validated_data)

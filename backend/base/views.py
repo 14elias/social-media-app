@@ -1,11 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated,AllowAny
-from .serializers import CreatePostSerializer, CreateUserProfileSerializer, MyUserProfileSerializer, PostSerializer, UserSerializer
-from .models import Myuser, Post
+from .serializers import CommentSerializer, CreatePostSerializer, CreateUserProfileSerializer, MyUserProfileSerializer, PostSerializer, UserSerializer
+from .models import Myuser, Post,Comment
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -252,3 +253,17 @@ def logout(request):
         return res
     except:
         return Response({'success':False})
+class CommentView(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self,request,*args,**kwargs):
+        post=get_object_or_404(Post,id=self.kwargs['pk'])
+        serializer=CommentSerializer(data=request.data,context={'user':request.user,'post':post})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+class RetrievePost(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,*args,**kwargs):
+        post=get_object_or_404(Post,id=self.kwargs['pk'])
+        serializer=PostSerializer(post,many=False)
+        return Response(serializer.data)
