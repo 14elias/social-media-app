@@ -261,9 +261,18 @@ class CommentView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data,status=status.HTTP_201_CREATED)
+    def get(self,request,*args,**kwargs):
+        post=get_object_or_404(Post,id=self.kwargs['pk'])
+        comments=post.comments.all()
+        serializer=CommentSerializer(comments,many=True)
+        return Response(serializer.data)
 class RetrievePost(APIView):
     permission_classes=[IsAuthenticated]
     def get(self,*args,**kwargs):
         post=get_object_or_404(Post,id=self.kwargs['pk'])
         serializer=PostSerializer(post,many=False)
         return Response(serializer.data)
+# class RetrieveCommentView(APIView):
+#     permission_classes=[IsAuthenticated]
+#     def get(self,request,*args,**kwargs):
+#         post=Post.objects.get(id=self.kwargs['pk'])
