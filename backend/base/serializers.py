@@ -36,9 +36,10 @@ class PostSerializer(serializers.ModelSerializer):
     formatted_data=serializers.SerializerMethodField()
     profile_image=serializers.SerializerMethodField()
     image=serializers.SerializerMethodField()
+    comment_count=serializers.SerializerMethodField()
     class Meta:
         model=Post
-        fields=['id','username','description','formatted_data','likes','likes_count','profile_image','image']
+        fields=['id','username','description','formatted_data','likes','likes_count','comment_count','profile_image','image']
     
     def get_likes_count(self,obj):
         return obj.likes.count()
@@ -55,6 +56,8 @@ class PostSerializer(serializers.ModelSerializer):
         if obj.image:  
             return obj.image.url  
         return None
+    def get_comment_count(self,obj):
+        return obj.comments.count()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=Myuser
