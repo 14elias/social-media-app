@@ -272,7 +272,10 @@ class RetrievePost(APIView):
         post=get_object_or_404(Post,id=self.kwargs['pk'])
         serializer=PostSerializer(post,many=False)
         return Response(serializer.data)
-# class RetrieveCommentView(APIView):
-#     permission_classes=[IsAuthenticated]
-#     def get(self,request,*args,**kwargs):
-#         post=Post.objects.get(id=self.kwargs['pk'])
+class RetrieveCommentView(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request,*args,**kwargs):
+        post=Post.objects.get(id=self.kwargs['pk'])
+        comment=post.comments.get(id=self.kwargs['comment_id'])
+        serializer=CommentSerializer(comment,many=False)
+        return Response(serializer.data)
