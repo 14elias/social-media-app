@@ -10,10 +10,12 @@ import CreatePost from './routes/create_post'
 import Home from './routes/Home'
 import SearchUser from './routes/search'
 import Setting from './routes/settings'
+import {ToastContainer, toast} from 'react-toastify'
 function App() {
   return (
     <ChakraProvider>
       <AuthProvider>
+      <ToastContainer/>
         <Routes>
             <Route element={<Layout><ProtectedRoute><UserProfile/></ProtectedRoute></Layout>} path='/:username'/>
             <Route element={<Layout><ProtectedRoute><CreatePost/></ProtectedRoute></Layout>} path='/create/post'/>

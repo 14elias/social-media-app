@@ -121,3 +121,15 @@ export const add_comment=async(id,text)=>{
     const response=await api.post(`/posts_by_id/${id}/comment/`,{text})
     return response.data
 }
+
+export const delete_comment=async(id,comment_id)=>{
+    const response=await api.delete(`/posts_by_id/${id}/comment/${comment_id}/`)
+    return response.data
+
+}
+
+export const edit_comment=async(id,comment_id,text)=>{
+    const response=await api.patch(`/posts_by_id/${id}/comment/${comment_id}/`,{text})
+    return response.data
+
+}

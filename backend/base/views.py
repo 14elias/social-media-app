@@ -26,7 +26,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             res=Response()
             user=Myuser.objects.get(username=username)
 
-            res.data={'success':True,'user':{
+            res.data={'success':True,'msg':'logged in successfully ','user':{
                 'username':user.username,
                 'bio':user.bio,
                 'email':user.email,
@@ -54,7 +54,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
             return res
         except:
-            return Response({'success':False})
+            return Response({'success':False,'msg':'error logging in'})
         
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self,request,*args,**kwargs):

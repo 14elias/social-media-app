@@ -3,6 +3,8 @@ import {useState} from 'react'
 import { logout, update_user_profile } from "../api/endpoints";
 import { useNavigate } from "react-router-dom";
 import { FaSignOutAlt } from "react-icons/fa";
+import {ToastContainer, toast} from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const Setting = () => {
 
@@ -25,10 +27,10 @@ const Setting = () => {
         try{
             await update_user_profile({'username':username,'email':email,'first_name':firstname,'last_name':lastname,'bio':bio,'profile_image':profileimage})
             localStorage.setItem('userdata',JSON.stringify({'username':username,'email':email,'first_name':firstname,'last_name':lastname,'bio':bio,}))
-            alert('updated successfully')
+            toast.success('updated successfully',{position:'top-right',autoClose:1000,})
             nav(`/${username}`)
         }catch{
-            alert('updating failed')
+            toast.error('updating failed')
         }
     }
     return (

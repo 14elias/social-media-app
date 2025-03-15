@@ -1,20 +1,26 @@
-import { VStack, Text, HStack, Flex, IconButton, Box, Avatar, Image, Button, Input } from "@chakra-ui/react";
+import { VStack, Text, HStack, IconButton, Box, Avatar, Image, Button, Input } from "@chakra-ui/react";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import { BiComment } from "react-icons/bi";
+import { FiEdit, FiTrash2, FiCheck, FiX } from "react-icons/fi"; 
 import React, { useState, useEffect } from "react";
-import { toggle_like,fetch_comments,add_comment} from "../api/endpoints"; 
+import { toggle_like, fetch_comments, add_comment, edit_comment, delete_comment } from "../api/endpoints"; 
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/constants";
 
-function Post({ id, username, description, formatted_data, likes_count, liked, profile_image, image,comment_count }) {
+function Post({ id, username, description, formatted_data, likes_count, liked, profile_image, image, comment_count }) {
     const [clientLiked, setClientLiked] = useState(liked);
     const [likes, setLikes] = useState(likes_count);
     const [expanded, setExpanded] = useState(false);
     const [comments, setComments] = useState([]);
     const [commentText, setCommentText] = useState("");
     const [showComments, setShowComments] = useState(false);
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [editedText, setEditedText] = useState("");
 
     const navigate = useNavigate();
+    const user_data=JSON.parse(localStorage.getItem('userdata'))
+    const current_user=user_data.username
+    console.log(current_user)
 
     useEffect(() => {
         if (showComments) {
@@ -34,15 +40,33 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
     };
 
     const loadComments = async () => {
-        const data = await fetch_comments(id); // API call to get comments
+        const data = await fetch_comments(id);
         setComments(data);
     };
 
     const handleCommentSubmit = async () => {
         if (!commentText.trim()) return;
-        const newComment = await add_comment(id, commentText); // API call to add comment
-        setComments([...comments, newComment]); // Update state with new comment
-        setCommentText(""); // Clear input field
+        const newComment = await add_comment(id, commentText);
+        setComments([...comments, newComment]);
+        setCommentText("");
+    };
+
+    const handleEditClick = (comment) => {
+        setEditingCommentId(comment.id);
+        setEditedText(comment.text);
+    };
+
+    const handleEditSave = async (id,commentId) => {
+        await edit_comment(id,commentId, editedText);
+        setComments(comments.map(comment => 
+            comment.id === commentId ? { ...comment, text: editedText } : comment
+        ));
+        setEditingCommentId(null);
+    };
+
+    const handleDelete = async (id,commentId) => {
+        await delete_comment(id,commentId);
+        setComments(comments.filter(comment => comment.id !== commentId));
     };
 
     const handleAvatarClick = () => {
@@ -63,7 +87,7 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                 <Text fontWeight="bold" fontSize="md">@{username}</Text>
             </HStack>
 
-            {/* Description (Truncated with "See More") */}
+            {/* Description */}
             <Box w="100%" px="4">
                 <Text fontSize="md" color="gray.700">
                     {expanded ? description : `${description.slice(0, 100)}...`}
@@ -80,7 +104,7 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                 )}
             </Box>
 
-            {/* Image Section */}
+            {/* Image */}
             <Box w="100%">
                 <Image src={`${SERVER_URL}${image}`} borderRadius="8px" />
             </Box>
@@ -116,14 +140,41 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                         {comments.map((comment) => (
                             <HStack key={comment.id} align="start" spacing="2" p="2">
                                 <Avatar size="sm" src={`${SERVER_URL}${comment.user.profile_image}`} />
-                                <Box>
-                                    <Text fontWeight="bold">@{comment.user}</Text>
-                                    <Text>{comment.text}</Text>
+                                <Box w="100%">
+                                    <HStack justifyContent="space-between">
+                                        <Text fontWeight="bold">@{comment.user}</Text>
+                                        {/* Edit & Delete Buttons */}
+                                        <HStack>
+                                            {comment.user==current_user && (editingCommentId === comment.id ? (
+                                                <>
+                                                    <IconButton icon={<FiCheck />} size="sm" onClick={() => handleEditSave(id,comment.id)} />
+                                                    <IconButton icon={<FiX />} size="sm" onClick={() => setEditingCommentId(null)} />
+                                                </>
+                                            ) : (
+                                                <> 
+                                                    <IconButton icon={<FiEdit />} size="sm" onClick={() => handleEditClick(comment)} />
+                                                    <IconButton icon={<FiTrash2 />} size="sm" color='red' onClick={() => handleDelete(id,comment.id)} />
+                                                
+                                                </>)
+                                            )}
+                                        </HStack>
+                                    </HStack>
+
+                                    {/* Edit Comment Field */}
+                                    {editingCommentId === comment.id ? (
+                                        <Input 
+                                            value={editedText}
+                                            onChange={(e) => setEditedText(e.target.value)}
+                                            size="sm"
+                                        />
+                                    ) : (
+                                        <Text>{comment.text}</Text>
+                                    )}
                                 </Box>
                             </HStack>
                         ))}
                     </Box>
-                    {/* Comment Input */}
+                    {/* Add Comment Input */}
                     <HStack w="100%">
                         <Input 
                             placeholder="Write a comment..." 

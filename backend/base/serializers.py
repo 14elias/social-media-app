@@ -62,6 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=Myuser
         fields=['username','profile_image','first_name','last_name','bio','email']
+        read_only_fields=['username']
 
 class CreatePostSerializer(serializers.ModelSerializer):
     class Meta:
