@@ -111,3 +111,8 @@ export const update_user_profile=async(value)=>{
     const response=await api.patch('/update/',value,{headers:{'Content-Type':'multipart/form-data'}})
     return response.data
 }
+
+export const fetch_comments=async(id)=>{
+    const response=await api.get(`/posts_by_id/${id}/comment/`)
+    return response.data
+}
