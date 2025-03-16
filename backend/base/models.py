@@ -25,6 +25,8 @@ class Comment(models.Model):
     post=models.ForeignKey(Post,on_delete=models.CASCADE,related_name='comments')
     text=models.TextField()
     created_at=models.DateTimeField(auto_now_add=True)
+    reply=models.ForeignKey('self',on_delete=models.CASCADE,related_name='replies',null=True,blank=True)
+    like=models.ManyToManyField(Myuser,related_name='comment_like')
 
     def __str__(self):
         return self.text
