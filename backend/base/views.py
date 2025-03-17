@@ -256,7 +256,6 @@ def logout(request):
 class CommentView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request,*args,**kwargs):
-        print(json.dumps(request.data, indent=4))
         post=get_object_or_404(Post,id=self.kwargs['pk'])
         serializer=CommentSerializer(data=request.data,context={'user':request.user,'post':post})
         serializer.is_valid(raise_exception=True)
@@ -276,9 +275,12 @@ class RetrievePost(APIView):
 class RetrieveCommentView(APIView):
     permission_classes=[IsAuthenticated]
     def get(self,request,*args,**kwargs):
+        user=request.user
         post=Post.objects.get(id=self.kwargs['pk'])
         comment=post.comments.get(id=self.kwargs['comment_id'])
         serializer=CommentSerializer(comment,many=False)
+        if user in comment.like.all():
+            return Response({**serializer.data,'liked':True})
         return Response(serializer.data)
     def delete(self,request,*args,**kwargs):
         post=Post.objects.get(id=self.kwargs['pk'])
@@ -296,3 +298,13 @@ class RetrieveCommentView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+class CommentLikeToggle(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self,request,*args,**kwargs):
+        post=Post.objects.get(id=self.kwargs['pk'])
+        comment=post.comments.get(id=self.kwargs['comment-Id'])
+        if request.user in comment.like.all():
+            comment.like.remove(request.user)
+            return Response({'liked':False})
+        comment.like.add(request.user)
+        return Response({"liked":True})
