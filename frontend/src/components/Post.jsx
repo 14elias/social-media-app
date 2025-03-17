@@ -6,6 +6,8 @@ import React, { useState, useEffect } from "react";
 import { toggle_like, fetch_comments, add_comment, edit_comment, delete_comment } from "../api/endpoints"; 
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/constants";
+import {ToastContainer, toast} from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 function Post({ id, username, description, formatted_data, likes_count, liked, profile_image, image, comment_count }) {
     const [clientLiked, setClientLiked] = useState(liked);
@@ -73,6 +75,10 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
         navigate(`/${username}`);
     };
 
+    const handlecommentavater = () => {
+        navigate(`/${comments.user}`);
+    }
+
     return (
         <VStack w="380px" h="auto" borderRadius="16px" p="3" boxShadow="lg" spacing="3" bg="white">
             {/* Username Section */}
@@ -139,7 +145,7 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                     <Box w="100%" maxH="200px" overflowY="auto">
                         {comments.map((comment) => (
                             <HStack key={comment.id} align="start" spacing="2" p="2">
-                                <Avatar size="sm" src={`${SERVER_URL}${comment.user.profile_image}`} />
+                                <Avatar size="sm" src={`${SERVER_URL}${comment.user.profile_image}`} onClick={()=>navigate(`/${comment.user}`)}/>
                                 <Box w="100%">
                                     <HStack justifyContent="space-between">
                                         <Text fontWeight="bold">@{comment.user}</Text>

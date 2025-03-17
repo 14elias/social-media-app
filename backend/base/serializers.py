@@ -76,10 +76,16 @@ class CreatePostSerializer(serializers.ModelSerializer):
         return Post.objects.create(user=user,description=description,image=image)
         
 class CommentSerializer(serializers.ModelSerializer):
+    like_count=serializers.SerializerMethodField()
+    reply_count=serializers.SerializerMethodField()
     class Meta:
         model=Comment
-        fields=['id','user','text','created_at','post']
+        fields=['id','user','text','created_at','post','like','reply','like_count','reply_count']
         read_only_fields=['user','created_at','post']
+    def get_like_count(self,obj):
+        return obj.like.count()
+    def get_reply_count(self,obj):
+        return obj.replies.count()
     def create(self, validated_data):
         user=self.context['user']
         post=self.context['post']
