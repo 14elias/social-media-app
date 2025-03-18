@@ -1,7 +1,7 @@
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import CommentLikeToggle, CommentView, RetrieveCommentView, RetrievePost, createPost, get_post_view, get_posts, get_user_profile_data,CustomTokenObtainPairView,CustomTokenRefreshView,create_user_profile,authenticated, get_username, logout, search_user, toggleFollow, toggleLike, update_user_profile
+from .views import CommentLikeToggle, CommentView, ReplyView, RetrieveCommentView, RetrievePost, RetrieveReply, createPost, get_post_view, get_posts, get_user_profile_data,CustomTokenObtainPairView,CustomTokenRefreshView,create_user_profile,authenticated, get_username, logout, search_user, toggleFollow, toggleLike, update_user_profile
 urlpatterns =[
     path('user_data/<str:pk>/',get_user_profile_data),
     path('create_user/',create_user_profile),
@@ -20,5 +20,7 @@ urlpatterns =[
     path('search/',search_user),
     path('update/',update_user_profile),
     path('logout/',logout),
-    path('comment_like_toggle/',CommentLikeToggle.as_view()),
+    path('posts_by_id/<int:pk>/comment/<int:comment_id>/toggle_like',CommentLikeToggle.as_view()),
+    path('posts_by_id/<int:pk>/comment/<int:comment_id>/reply',ReplyView.as_view()),
+    path('posts_by_id/<int:pk>/comment/<int:comment_id>/reply/<int:reply_id>/',RetrieveReply.as_view()),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated,AllowAny
-from .serializers import CommentSerializer, CreatePostSerializer, CreateUserProfileSerializer, MyUserProfileSerializer, PostSerializer, UserSerializer
+from .serializers import CommentSerializer, CreatePostSerializer, CreateUserProfileSerializer, MyUserProfileSerializer, PostSerializer, ReplySerializer, UserSerializer
 from .models import Myuser, Post,Comment
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -256,7 +256,9 @@ def logout(request):
 class CommentView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request,*args,**kwargs):
+        print(request.data)
         post=get_object_or_404(Post,id=self.kwargs['pk'])
+        print(post)
         serializer=CommentSerializer(data=request.data,context={'user':request.user,'post':post})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -308,3 +310,39 @@ class CommentLikeToggle(APIView):
             return Response({'liked':False})
         comment.like.add(request.user)
         return Response({"liked":True})
+
+class ReplyView(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self,request,*args,**kwargs):
+        post=Post.objects.get(id=self.kwargs['pk'])
+        comment=post.comments.get(id=self.kwargs['comment_id'])
+        serializer=ReplySerializer(data=request.data,context={'user':request.user,'post':post,'reply':comment})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+    def get(self,request,*args,**kwargs):
+        post=Post.objects.get(id=self.kwargs['pk'])
+        comment=post.comments.get(id=self.kwargs['comment_id'])
+        if not comment:
+            return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
+        replies=comment.replies.all()
+        serializer=ReplySerializer(replies,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    
+class RetrieveReply(APIView):
+    permission_classes=[IsAuthenticated]
+    def delete(self,request,*args,**kwargs):
+        post=get_object_or_404(Post,id=self.kwargs['pk'])
+        comment=get_object_or_404(post.comments,id=self.kwargs['comment_id'])
+        reply=get_object_or_404(comment.replies,id=self.kwargs['reply_id'])
+        if reply.user!=request.user:
+            return Response({'error':'you are not allowed to delete this reply'})
+        reply.delete()
+        return Response({'success':'True'},status=status.HTTP_204_NO_CONTENT)
+    def get(self,request,*args,**kwargs):
+        post=get_object_or_404(Post,id=self.kwargs['pk'])
+        comment=get_object_or_404(post.comments,id=self.kwargs['comment_id'])
+        reply=get_object_or_404(comment.replies,id=self.kwargs['reply_id'])
+        serializer=ReplySerializer(reply,many=False)
+        return Response(serializer.data)
