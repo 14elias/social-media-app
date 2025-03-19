@@ -3,7 +3,7 @@ import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import { BiComment, BiReply } from "react-icons/bi";
 import { FiEdit, FiTrash2, FiCheck, FiX } from "react-icons/fi";
 import React, { useState, useEffect } from "react";
-import { toggle_like, fetch_comments, add_comment, edit_comment, delete_comment } from "../api/endpoints";
+import { toggle_like, fetch_comments, add_comment, edit_comment, delete_comment, toggle_comment_like, get_comment_reply, add_reply } from "../api/endpoints";
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/constants";
 import { ToastContainer, toast } from "react-toastify";
@@ -18,6 +18,11 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
     const [showComments, setShowComments] = useState(false);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editedText, setEditedText] = useState("");
+    const [replyText, setReplyText] = useState("");
+    const [replyingToCommentId, setReplyingToCommentId] = useState(null);
+    const [replies, setReplies] = useState({});
+    const [loadingRepliesFor, setLoadingRepliesFor] = useState(true);
+    const [showReplies,setShowReplies]=useState(false)
 
     const navigate = useNavigate();
     const user_data = JSON.parse(localStorage.getItem("userdata"));
@@ -76,6 +81,46 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
         navigate(`/${username}`);
     };
 
+    const handleCommentLike = async (commentId) => {
+        const data = await toggle_comment_like(id, commentId);
+        setComments(
+            comments.map((comment) =>
+                comment.id === commentId ? { ...comment, liked: data.liked, like_count: data.like_count } : comment
+            )
+        );
+    };
+
+    const handleReplySubmit = async (commentId) => {
+        if (!replyText.trim()) return;
+        const newReply = await add_reply(id, commentId, replyText);
+        setReplies((prevReplies) => ({
+            ...prevReplies,
+            [commentId]: [...(prevReplies[commentId] || []), newReply],
+        }));
+        setReplyText("");
+        setReplyingToCommentId(null);
+    };
+
+
+    const loadReplies = async (commentId) => {
+        setShowReplies(!showReplies)
+        if (showReplies){
+            if (replies[commentId]) return; // Don't reload if already loaded
+            setLoadingRepliesFor(commentId);
+            const data = await get_comment_reply(id, commentId);
+            setReplies((prevReplies) => ({
+                ...prevReplies,
+                [commentId]: data,
+        }));
+        setLoadingRepliesFor(false);
+        }
+        
+    };
+    const toggleReplyInput = (commentId) => {
+        // Toggle the reply input field for the selected comment
+        setReplyingToCommentId((prevId) => (prevId === commentId ? null : commentId));
+    };
+
     return (
         <VStack w="380px" borderRadius="16px" p="3" boxShadow="lg" spacing="3" bg="white">
             <HStack w="100%" bg="gray.100" borderTopRadius="12px" p="6px 16px">
@@ -111,44 +156,97 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
             {showComments && (
                 <VStack w="100%" align="start" p="3">
                     <Text fontWeight="bold">Comments:</Text>
+
+                    {/* Input Field for Writing a Comment */}
+                    <HStack w="100%">
+                        <Avatar size="sm" src={`${SERVER_URL}${profile_image}`} />
+                        <Input
+                            placeholder="Write a comment..."
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            size="sm"
+                            w="100%"
+                        />
+                        <Button colorScheme="blue" size="sm" onClick={handleCommentSubmit}>
+                            Comment
+                        </Button>
+                    </HStack>
+
+                    {/* Displaying Existing Comments */}
                     <Box w="100%" maxH="200px" overflowY="auto">
                         {comments.map((comment) => (
-                            <HStack key={comment.id} align="start" spacing="2" p="2">
-                                <Avatar size="sm" src={`${SERVER_URL}${comment.user.profile_image}`} onClick={() => navigate(`/${comment.user}`)} />
-                                <Box w="100%">
-                                    <HStack justifyContent="space-between">
-                                        <Text fontWeight="bold">@{comment.user}</Text>
-                                        {comment.user === current_user && (
-                                            <HStack>
-                                                {editingCommentId === comment.id ? (
-                                                    <>
-                                                        <IconButton icon={<FiCheck />} size="sm" onClick={() => handleEditSave(id, comment.id)} />
-                                                        <IconButton icon={<FiX />} size="sm" onClick={() => setEditingCommentId(null)} />
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <IconButton icon={<FiEdit />} size="sm" onClick={() => handleEditClick(comment)} />
-                                                        <IconButton icon={<FiTrash2 />} size="sm" color="red" onClick={() => handleDelete(id, comment.id)} />
-                                                    </>
-                                                )}
+                            <VStack key={comment.id} align="start" spacing="2" p="2">
+                                <HStack w="100%">
+                                    <Avatar size="sm" src={`${SERVER_URL}${comment.user.profile_image}`} />
+                                    <Box w="100%">
+                                        <HStack justifyContent="space-between">
+                                            <Text fontWeight="bold">@{comment.user}</Text>
+                                            {comment.user === current_user && (
+                                                <HStack>
+                                                    {editingCommentId === comment.id ? (
+                                                        <>
+                                                            <IconButton icon={<FiCheck />} size="sm" onClick={() => handleEditSave(id, comment.id)} />
+                                                            <IconButton icon={<FiX />} size="sm" onClick={() => setEditingCommentId(null)} />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <IconButton icon={<FiEdit />} size="sm" onClick={() => handleEditClick(comment)} />
+                                                            <IconButton icon={<FiTrash2 />} size="sm" color="red" onClick={() => handleDelete(id, comment.id)} />
+                                                        </>
+                                                    )}
+                                                </HStack>
+                                            )}
+                                        </HStack>
+                                        {editingCommentId === comment.id ? (
+                                            <Input value={editedText} onChange={(e) => setEditedText(e.target.value)} size="sm" />
+                                        ) : (
+                                            <HStack justify="space-between" w="100%">
+                                                <Text>{comment.text}</Text>
+                                                <HStack mt="1" spacing="3">
+                                                    <IconButton icon={comment.liked ? <AiFillHeart color="red" /> : <AiOutlineHeart />} size="xs" cursor="pointer" onClick={() => handleCommentLike(comment.id)} />
+                                                    <Text fontSize="xs">{comment.like_count} Likes</Text>
+                                                    <IconButton
+                                                        icon={<BiReply size="16px" color="gray" />}
+                                                        size="xs"
+                                                        cursor="pointer"
+                                                        onClick={() => toggleReplyInput(comment.id)}
+                                                    />
+                                                    <Text fontSize="xs" cursor="pointer" onClick={() => loadReplies(comment.id)}>
+                                                        {comment.reply_count} Replies
+                                                    </Text>
+                                                </HStack>
                                             </HStack>
                                         )}
-                                    </HStack>
-                                    {editingCommentId === comment.id ? (
-                                        <Input value={editedText} onChange={(e) => setEditedText(e.target.value)} size="sm" />
-                                    ) : (
-                                        <HStack justify="space-between" w="100%">
-                                            <Text>{comment.text}</Text>
-                                            <HStack mt="1" spacing="3">
-                                                <IconButton icon={<AiFillHeart size="16px" color="gray" />} size="xs" cursor="pointer" />
-                                                <Text fontSize="xs">{comment.like_count} Likes</Text>
-                                                <IconButton icon={<BiReply size="16px" color="gray" />} size="xs" cursor="pointer" />
-                                                <Text fontSize="xs">{comment.reply_count} Replies</Text>
+                                    </Box>
+                                </HStack>
+                                {replies[comment.id] && (
+                                    <VStack w="100%" pl="12" align="start">
+                                        {replies[comment.id].map((reply) => (
+                                            <HStack key={reply.id} w="100%">
+                                                <Avatar size="sm" src={`${SERVER_URL}${reply.user.profile_image}`} />
+                                                <Box>
+                                                    <Text fontWeight="bold">@{reply.user}</Text>
+                                                    <Text>{reply.text}</Text>
+                                                </Box>
                                             </HStack>
-                                        </HStack>
-                                    )}
-                                </Box>
-                            </HStack>
+                                        ))}
+                                        {replyingToCommentId === comment.id && (
+                                            <HStack w="100%" pl="12">
+                                                <Input
+                                                    placeholder="Write a reply..."
+                                                    value={replyText}
+                                                    onChange={(e) => setReplyText(e.target.value)}
+                                                    size="sm"
+                                                    w="100%"
+                                                />
+                                                <Button colorScheme="blue" size="sm" onClick={() => handleReplySubmit(comment.id)}>
+                                                    Reply
+                                                </Button>
+                                            </HStack>
+                                        )}
+                                    </VStack>
+                                )}
+                            </VStack>
                         ))}
                     </Box>
                 </VStack>

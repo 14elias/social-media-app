@@ -133,3 +133,18 @@ export const edit_comment=async(id,comment_id,text)=>{
     return response.data
 
 }
+
+export const toggle_comment_like=async(id,comment_id)=>{
+    const response=await api.post(`/posts_by_id/${id}/comment/${comment_id}/toggle_like/`)
+    return response.data
+}
+
+export const get_comment_reply=async(id,comment_id)=>{
+    const response= await api.get(`/posts_by_id/${id}/comment/${comment_id}/reply`)
+    return response.data
+}
+
+export const add_reply=async(id,comment_id,text)=>{
+    const response=await api.post(`/posts_by_id/${id}/comment/${comment_id}/reply`,{text})
+    return response.data
+}
