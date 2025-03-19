@@ -7,8 +7,12 @@ admin.site.register(Myuser)
 
 
 class PostAdmin(admin.ModelAdmin):
-    list_display=['id','user','description','created_at']
+    list_display=['id','user','description','created_at','comments_count']
     search_fields=['user','description']
+
+    def comments_count(self,obj):
+        if obj.comments:
+            return obj.comments.count()
 
 admin.site.register(Post,PostAdmin)
 

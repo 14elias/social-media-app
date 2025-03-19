@@ -265,7 +265,7 @@ class CommentView(APIView):
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     def get(self,request,*args,**kwargs):
         post=get_object_or_404(Post,id=self.kwargs['pk'])
-        comments=post.comments.all()
+        comments=post.comments.filter(reply__isnull=True)
         serializer=CommentSerializer(comments,many=True)
         return Response(serializer.data)
 class RetrievePost(APIView):
@@ -280,6 +280,8 @@ class RetrieveCommentView(APIView):
         user=request.user
         post=Post.objects.get(id=self.kwargs['pk'])
         comment=post.comments.get(id=self.kwargs['comment_id'])
+        if comment.reply:
+            return Response({'error':'this is reply not a comment'})
         serializer=CommentSerializer(comment,many=False)
         if user in comment.like.all():
             return Response({**serializer.data,'liked':True})
