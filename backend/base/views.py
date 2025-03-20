@@ -281,8 +281,18 @@ class RetrieveCommentView(APIView):
     permission_classes=[IsAuthenticated]
     def get(self,request,*args,**kwargs):
         user=request.user
-        post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
-        comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
+        # post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
+        # comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
+        queryset = Comment.objects.filter(
+            post_id=self.kwargs['pk'],
+            id=self.kwargs['comment_id'],
+            reply__isnull=True  # Ensure it's not a reply
+        ).select_related('user').annotate(
+            like_count=Count('like'),
+            reply_count=Count('replies')
+        )
+        comment=get_object_or_404(queryset)
+
         if comment.reply:
             return Response({'error':'this is reply not a comment'})
         serializer=CommentSerializer(comment,many=False)
