@@ -1,4 +1,5 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
+from django.db.models import Count
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -262,8 +263,12 @@ class CommentView(APIView):
         serializer.save()
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     def get(self,request,*args,**kwargs):
-        post=get_object_or_404(Post.objects.select_related('user'),id=self.kwargs['pk'])
-        comments=post.comments.filter(reply__isnull=True).select_related('user').prefetch_related('like','replies__user')
+        comments=Comment.objects.filter(
+            post_id=self.kwargs['pk'],reply__isnull=True
+        ).select_related('user').prefetch_related('like').annotate(
+            like_count=Count('like'),
+            reply_count=Count('replies')
+        )
         serializer=CommentSerializer(comments,many=True)
         return Response(serializer.data)
 class RetrievePost(APIView):
@@ -300,6 +305,7 @@ class RetrieveCommentView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+    
 class CommentLikeToggle(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request,*args,**kwargs):
@@ -315,17 +321,20 @@ class ReplyView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request,*args,**kwargs):
         post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
-        comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
+        comment=post.comments.select_related('user','post__user').get(
+            post_id=self.kwargs['pk'],id=self.kwargs['comment_id']
+        )
         serializer=ReplySerializer(data=request.data,context={'user':request.user,'post':post,'reply':comment})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
     def get(self,request,*args,**kwargs):
-        post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
-        comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
+        comment=Comment.objects.select_related('user','post__user').get(
+            post_id=self.kwargs['pk'],id=self.kwargs['comment_id']
+        )
         if not comment:
             return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
-        replies=comment.replies.select_related('user').all()
+        replies=comment.replies.select_related('user').prefetch_related('like').all()
         serializer=ReplySerializer(replies,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -333,16 +342,20 @@ class ReplyView(APIView):
 class RetrieveReply(APIView):
     permission_classes=[IsAuthenticated]
     def delete(self,request,*args,**kwargs):
-        post=get_object_or_404(Post,id=self.kwargs['pk'])
-        comment=get_object_or_404(post.comments,id=self.kwargs['comment_id'])
-        reply=get_object_or_404(comment.replies,id=self.kwargs['reply_id'])
+        reply=get_object_or_404(
+            Comment.objects.select_related('user','post__user','reply__user'),
+            post_id=self.kwargs['pk'],
+            id=self.kwargs['reply_id']
+        )
         if reply.user!=request.user:
             return Response({'error':'you are not allowed to delete this reply'})
         reply.delete()
         return Response({'success':'True'},status=status.HTTP_204_NO_CONTENT)
     def get(self,request,*args,**kwargs):
-        post=get_object_or_404(Post,id=self.kwargs['pk'])
-        comment=get_object_or_404(post.comments,id=self.kwargs['comment_id'])
-        reply=get_object_or_404(comment.replies,id=self.kwargs['reply_id'])
+        reply=get_object_or_404(
+            Comment.objects.select_related('user','post__user','reply__user'),
+            post_id=self.kwargs['pk'],
+            id=self.kwargs['reply_id']
+        )
         serializer=ReplySerializer(reply,many=False)
         return Response(serializer.data)
