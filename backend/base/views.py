@@ -11,7 +11,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-import json
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self,request ,*args,**kwargs):
@@ -138,7 +138,7 @@ def toggleFollow(request):
 @permission_classes([IsAuthenticated])
 def get_post_view(request,pk):
     try:
-        user=Myuser.objects.prefetch_related('posts').get(username=pk)
+        user=Myuser.objects.prefetch_related('posts__likes').get(username=pk)
         my_user=Myuser.objects.get(username=request.user.username)
     except Myuser.DoesNotExist:
         return Response ({'error':'user does not exist'})
@@ -156,22 +156,21 @@ def get_post_view(request,pk):
 @permission_classes([IsAuthenticated])
 def toggleLike(request):
     try:
-        try:
-            post=Post.objects.get(id=request.data['id'])
-        except Post.DoesNotExist:
-            return Response({'error':'post does not exist'})
-        try:
-            user=Myuser.objects.get(username=request.user.username)
-        except Myuser.DoesNotExist:
-            return Response({'error':'user does not exist'})
+        post = Post.objects.select_related('user').get(id=request.data['id'])
+        user = Myuser.objects.get(username=request.user.username)
+        
         if user in post.likes.all():
             post.likes.remove(user)
-            return Response({'now_liked':False})
+            return Response({'now_liked': False})
         else:
             post.likes.add(user)
-            return Response({'now_liked':True})
+            return Response({'now_liked': True})
+    except Post.DoesNotExist:
+        return Response({'error': 'post does not exist'})
+    except Myuser.DoesNotExist:
+        return Response({'error': 'user does not exist'})
     except:
-        return Response({'error':'failed to like'})
+        return Response({'error': 'failed to like'})
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -197,7 +196,7 @@ def get_posts(request):
     except Myuser.DoesNotExist:
         return Response({'error':'user does not exist'})
     
-    posts=Post.objects.all().order_by('-created_at')
+    posts=Post.objects.prefetch_related('likes').all().order_by('-created_at')
     paginator=PageNumberPagination()
     paginator.page_size=10
     result_page=paginator.paginate_queryset(posts,request)
@@ -257,15 +256,14 @@ class CommentView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request,*args,**kwargs):
         print(request.data)
-        post=get_object_or_404(Post,id=self.kwargs['pk'])
-        print(post)
+        post=get_object_or_404(Post.objects.select_related('user'),id=self.kwargs['pk'])
         serializer=CommentSerializer(data=request.data,context={'user':request.user,'post':post})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     def get(self,request,*args,**kwargs):
-        post=get_object_or_404(Post,id=self.kwargs['pk'])
-        comments=post.comments.filter(reply__isnull=True)
+        post=get_object_or_404(Post.objects.select_related('user'),id=self.kwargs['pk'])
+        comments=post.comments.filter(reply__isnull=True).select_related('user').prefetch_related('like','replies__user')
         serializer=CommentSerializer(comments,many=True)
         return Response(serializer.data)
 class RetrievePost(APIView):
@@ -278,8 +276,8 @@ class RetrieveCommentView(APIView):
     permission_classes=[IsAuthenticated]
     def get(self,request,*args,**kwargs):
         user=request.user
-        post=Post.objects.get(id=self.kwargs['pk'])
-        comment=post.comments.get(id=self.kwargs['comment_id'])
+        post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
+        comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
         if comment.reply:
             return Response({'error':'this is reply not a comment'})
         serializer=CommentSerializer(comment,many=False)
@@ -287,15 +285,15 @@ class RetrieveCommentView(APIView):
             return Response({**serializer.data,'liked':True})
         return Response(serializer.data)
     def delete(self,request,*args,**kwargs):
-        post=Post.objects.get(id=self.kwargs['pk'])
-        comment=post.comments.get(id=self.kwargs['comment_id'])
+        post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
+        comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
         if comment.user!=request.user:
             return Response({'error':'you are not allowed to delete this comment'})
         comment.delete()
         return Response({'success':True},status=status.HTTP_204_NO_CONTENT)
     def patch(self,request,*args,**kwargs):
-        post=Post.objects.get(id=self.kwargs['pk'])
-        comment=post.comments.get(id=self.kwargs['comment_id'])
+        post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
+        comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
         if comment.user!=request.user:
             return Response({'error':'you are not allowed to edit this comment'})
         serializer=CommentSerializer(comment,data=request.data,partial=True)
@@ -316,18 +314,18 @@ class CommentLikeToggle(APIView):
 class ReplyView(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request,*args,**kwargs):
-        post=Post.objects.get(id=self.kwargs['pk'])
-        comment=post.comments.get(id=self.kwargs['comment_id'])
+        post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
+        comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
         serializer=ReplySerializer(data=request.data,context={'user':request.user,'post':post,'reply':comment})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
     def get(self,request,*args,**kwargs):
-        post=Post.objects.get(id=self.kwargs['pk'])
-        comment=post.comments.get(id=self.kwargs['comment_id'])
+        post=Post.objects.select_related('user').get(id=self.kwargs['pk'])
+        comment=post.comments.select_related('user').get(id=self.kwargs['comment_id'])
         if not comment:
             return Response({"error": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
-        replies=comment.replies.all()
+        replies=comment.replies.select_related('user').all()
         serializer=ReplySerializer(replies,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
