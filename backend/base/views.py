@@ -274,7 +274,7 @@ class CommentView(APIView):
 class RetrievePost(APIView):
     permission_classes=[IsAuthenticated]
     def get(self,*args,**kwargs):
-        post=get_object_or_404(Post,id=self.kwargs['pk'])
+        post=get_object_or_404(Post.objects.select_related('user').prefetch_related('likes'),id=self.kwargs['pk'])
         serializer=PostSerializer(post,many=False)
         return Response(serializer.data)
 class RetrieveCommentView(APIView):
