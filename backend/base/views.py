@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.db.models import Count
+from django.db.models import Count,Prefetch
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -197,7 +197,9 @@ def get_posts(request):
     except Myuser.DoesNotExist:
         return Response({'error':'user does not exist'})
     
-    posts=Post.objects.prefetch_related('likes').all().order_by('-created_at')
+    posts=Post.objects.select_related().prefetch_related(
+        'likes',Prefetch('comments', queryset=Comment.objects.only('id'))
+        ).all().order_by('-created_at')
     paginator=PageNumberPagination()
     paginator.page_size=10
     result_page=paginator.paginate_queryset(posts,request)
