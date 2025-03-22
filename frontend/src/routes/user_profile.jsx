@@ -109,7 +109,8 @@ const UserDetail=({username})=>{
                 }
             </VStack>
         </HStack>
-        <Text>{loading? '-' : bio}</Text>
+        <h4>Bio</h4>
+        <Text pd='0px'>{loading? '-' : bio}</Text>
     </VStack>
     )
 }

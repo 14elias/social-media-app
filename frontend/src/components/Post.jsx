@@ -1,4 +1,4 @@
-import { VStack, Text, HStack, IconButton, Box, Avatar, Image, Button, Input } from "@chakra-ui/react";
+import { VStack, Text, HStack, IconButton, Box, Avatar, Image, Button, Input, Divider } from "@chakra-ui/react";
 import { AiOutlineHeart, AiFillHeart } from "react-icons/ai";
 import { BiComment, BiReply } from "react-icons/bi";
 import { FiEdit, FiTrash2, FiCheck, FiX } from "react-icons/fi";
@@ -6,8 +6,6 @@ import React, { useState, useEffect } from "react";
 import { toggle_like, fetch_comments, add_comment, edit_comment, delete_comment, toggle_comment_like, get_comment_reply, add_reply } from "../api/endpoints";
 import { useNavigate } from "react-router-dom";
 import { SERVER_URL } from "../constants/constants";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 function Post({ id, username, description, formatted_data, likes_count, liked, profile_image, image, comment_count }) {
     const [clientLiked, setClientLiked] = useState(liked);
@@ -22,7 +20,7 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
     const [replyingToCommentId, setReplyingToCommentId] = useState(null);
     const [replies, setReplies] = useState({});
     const [loadingRepliesFor, setLoadingRepliesFor] = useState(true);
-    const [showReplies,setShowReplies]=useState(false)
+    const [showReplies, setShowReplies] = useState(false);
 
     const navigate = useNavigate();
     const user_data = JSON.parse(localStorage.getItem("userdata"));
@@ -101,54 +99,104 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
         setReplyingToCommentId(null);
     };
 
-
     const loadReplies = async (commentId) => {
-        setShowReplies(!showReplies)
-        if (showReplies){
+        setShowReplies(!showReplies);
+        if (showReplies) {
             if (replies[commentId]) return; // Don't reload if already loaded
             setLoadingRepliesFor(commentId);
             const data = await get_comment_reply(id, commentId);
             setReplies((prevReplies) => ({
                 ...prevReplies,
                 [commentId]: data,
-        }));
-        setLoadingRepliesFor(false);
+            }));
+            setLoadingRepliesFor(false);
         }
-        
     };
+
     const toggleReplyInput = (commentId) => {
-        // Toggle the reply input field for the selected comment
         setReplyingToCommentId((prevId) => (prevId === commentId ? null : commentId));
     };
 
     return (
-        <VStack w="380px" borderRadius="16px" p="3" boxShadow="lg" spacing="3" bg="white">
-            <HStack w="100%" bg="gray.100" borderTopRadius="12px" p="6px 16px">
-                <Avatar size="md" src={`${SERVER_URL}${profile_image}`} name={username} cursor="pointer" onClick={handleAvatarClick} />
-                <Text fontWeight="bold" fontSize="md">@{username}</Text>
+        <VStack
+            w="100%"
+            maxW="600px"
+            bg="white"
+            borderRadius="md"
+            boxShadow="sm"
+            p="4"
+            mb="4"
+            _hover={{ boxShadow: "md" }}
+        >
+            {/* Header */}
+            <HStack spacing="4" mb="4" w="100%">
+                <Avatar
+                    size="md"
+                    src={`${SERVER_URL}${profile_image}`}
+                    name={username}
+                    cursor="pointer"
+                    onClick={handleAvatarClick}
+                />
+                <VStack align="start" spacing="0" flex="1">
+                    <Text fontWeight="bold" fontSize="md">
+                        @{username}
+                    </Text>
+                    <Text fontSize="sm" color="gray.500">
+                        {formatted_data}
+                    </Text>
+                </VStack>
             </HStack>
 
-            <Box w="100%" px="4">
-                <Text fontSize="md" color="gray.700">
-                    {expanded ? description : `${description.slice(0, 100)}...`}
-                </Text>
-                {description.length > 100 && (
-                    <Button variant="link" color="blue.500" size="sm" onClick={() => setExpanded(!expanded)}>
-                        {expanded ? "See Less" : "See More"}
-                    </Button>
-                )}
-            </Box>
+            {/* Description */}
+            <Text mb="4" noOfLines={expanded ? undefined : 3}>
+                {description}
+            </Text>
+            {description.length > 100 && (
+                <Button
+                    variant="link"
+                    color="blue.500"
+                    size="sm"
+                    onClick={() => setExpanded(!expanded)}
+                >
+                    {expanded ? "See Less" : "See More"}
+                </Button>
+            )}
 
-            <Box w="100%">
-                <Image src={`${SERVER_URL}${image}`} borderRadius="8px" />
-            </Box>
+            {/* Image */}
+            {image && (
+                <Image
+                    src={`${SERVER_URL}${image}`}
+                    alt="Post image"
+                    borderRadius="md"
+                    mb="4"
+                    maxH="400px"
+                    objectFit="cover"
+                    w="100%"
+                />
+            )}
 
-            <HStack w="100%" justifyContent="space-between" p="6px 16px" bg="gray.50" borderBottomRadius="12px">
-                <Text fontSize="xs" color="gray.500">{formatted_data}</Text>
-                <HStack>
-                    <IconButton icon={clientLiked ? <AiFillHeart color="red" /> : <AiOutlineHeart />} onClick={handleLike} variant="ghost" size="md" _hover={{ transform: "scale(1.1)" }} />
+            <Divider mb="4" />
+
+            {/* Actions */}
+            <HStack justify="space-between" w="100%">
+                <HStack spacing="2">
+                    <IconButton
+                        icon={clientLiked ? <AiFillHeart color="red" /> : <AiOutlineHeart />}
+                        onClick={handleLike}
+                        variant="ghost"
+                        size="md"
+                        _hover={{ bg: "gray.100" }}
+                    />
                     <Text fontSize="sm">{likes} Likes</Text>
-                    <IconButton icon={<BiComment />} onClick={() => setShowComments(!showComments)} variant="ghost" size="md" _hover={{ transform: "scale(1.1)" }} />
+                </HStack>
+                <HStack spacing="2">
+                    <IconButton
+                        icon={<BiComment />}
+                        variant="ghost"
+                        size="md"
+                        _hover={{ bg: "gray.100" }}
+                        onClick={() => setShowComments(!showComments)}
+                    />
                     <Text fontSize="sm">{comment_count} Comments</Text>
                 </HStack>
             </HStack>
@@ -185,25 +233,57 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                                                 <HStack>
                                                     {editingCommentId === comment.id ? (
                                                         <>
-                                                            <IconButton icon={<FiCheck />} size="sm" onClick={() => handleEditSave(id, comment.id)} />
-                                                            <IconButton icon={<FiX />} size="sm" onClick={() => setEditingCommentId(null)} />
+                                                            <IconButton
+                                                                icon={<FiCheck />}
+                                                                size="sm"
+                                                                onClick={() => handleEditSave(id, comment.id)}
+                                                            />
+                                                            <IconButton
+                                                                icon={<FiX />}
+                                                                size="sm"
+                                                                onClick={() => setEditingCommentId(null)}
+                                                            />
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <IconButton icon={<FiEdit />} size="sm" onClick={() => handleEditClick(comment)} />
-                                                            <IconButton icon={<FiTrash2 />} size="sm" color="red" onClick={() => handleDelete(id, comment.id)} />
+                                                            <IconButton
+                                                                icon={<FiEdit />}
+                                                                size="sm"
+                                                                onClick={() => handleEditClick(comment)}
+                                                            />
+                                                            <IconButton
+                                                                icon={<FiTrash2 />}
+                                                                size="sm"
+                                                                color="red"
+                                                                onClick={() => handleDelete(id, comment.id)}
+                                                            />
                                                         </>
                                                     )}
                                                 </HStack>
                                             )}
                                         </HStack>
                                         {editingCommentId === comment.id ? (
-                                            <Input value={editedText} onChange={(e) => setEditedText(e.target.value)} size="sm" />
+                                            <Input
+                                                value={editedText}
+                                                onChange={(e) => setEditedText(e.target.value)}
+                                                size="sm"
+                                            />
                                         ) : (
                                             <HStack justify="space-between" w="100%">
                                                 <Text>{comment.text}</Text>
                                                 <HStack mt="1" spacing="3">
-                                                    <IconButton icon={comment.liked ? <AiFillHeart color="red" /> : <AiOutlineHeart />} size="xs" cursor="pointer" onClick={() => handleCommentLike(comment.id)} />
+                                                    <IconButton
+                                                        icon={
+                                                            comment.liked ? (
+                                                                <AiFillHeart color="red" />
+                                                            ) : (
+                                                                <AiOutlineHeart />
+                                                            )
+                                                        }
+                                                        size="xs"
+                                                        cursor="pointer"
+                                                        onClick={() => handleCommentLike(comment.id)}
+                                                    />
                                                     <Text fontSize="xs">{comment.like_count} Likes</Text>
                                                     <IconButton
                                                         icon={<BiReply size="16px" color="gray" />}
@@ -211,7 +291,11 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                                                         cursor="pointer"
                                                         onClick={() => toggleReplyInput(comment.id)}
                                                     />
-                                                    <Text fontSize="xs" cursor="pointer" onClick={() => loadReplies(comment.id)}>
+                                                    <Text
+                                                        fontSize="xs"
+                                                        cursor="pointer"
+                                                        onClick={() => loadReplies(comment.id)}
+                                                    >
                                                         {comment.reply_count} Replies
                                                     </Text>
                                                 </HStack>
@@ -239,7 +323,11 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                                                     size="sm"
                                                     w="100%"
                                                 />
-                                                <Button colorScheme="blue" size="sm" onClick={() => handleReplySubmit(comment.id)}>
+                                                <Button
+                                                    colorScheme="blue"
+                                                    size="sm"
+                                                    onClick={() => handleReplySubmit(comment.id)}
+                                                >
                                                     Reply
                                                 </Button>
                                             </HStack>
