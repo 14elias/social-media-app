@@ -9,7 +9,6 @@ import {
     Box,
     Avatar,
     Text,
-    Divider,
   } from "@chakra-ui/react";
   import { useState } from "react";
   import { logout, update_user_profile } from "../api/endpoints";
@@ -67,31 +66,28 @@ import {
     };
   
     return (
-      <Flex justify="center" align="center" minH="100vh" bg="gray.50" p={4}>
+      <Flex justify="center" align="center" minH="100vh" bg="gray.100" p={4}>
         <Box
           bg="white"
           p={8}
           rounded="lg"
-          shadow="2xl"
+          shadow="lg"
           w={{ base: "90%", md: "50%" }}
           maxW="600px"
         >
-          <VStack spacing={8} align="stretch">
+          <VStack spacing={6} align="stretch">
             {/* Page Heading */}
             <Heading size="lg" textAlign="center" color="teal.600">
-              Account Settings
+              Settings
             </Heading>
-  
-            <Divider />
   
             {/* Profile Picture */}
             <VStack spacing={4} align="center">
               <Avatar
-                size="2xl"
+                size="xl"
                 src={profileImage ? URL.createObjectURL(profileImage) : ""}
                 name={username}
                 bg="teal.500"
-                shadow="md"
               />
               <FormControl>
                 <FormLabel fontWeight="bold" color="gray.700">
@@ -102,12 +98,9 @@ import {
                   p={1}
                   border="1px solid gray.300"
                   onChange={(e) => setProfileImage(e.target.files[0])}
-                  _hover={{ borderColor: "teal.400" }}
                 />
               </FormControl>
             </VStack>
-  
-            <Divider />
   
             {/* Form Fields */}
             <VStack spacing={4}>
@@ -167,8 +160,6 @@ import {
                 />
               </FormControl>
             </VStack>
-  
-            <Divider />
   
             {/* Save Changes Button */}
             <Button
