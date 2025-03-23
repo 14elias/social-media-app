@@ -135,7 +135,7 @@ export const edit_comment=async(id,comment_id,text)=>{
 }
 
 export const toggle_comment_like=async(id,comment_id)=>{
-    const response=await api.post(`/posts_by_id/${id}/comment/${comment_id}/toggle_like/`)
+    const response=await api.post(`/posts_by_id/${id}/comment/${comment_id}/toggle_like`)
     return response.data
 }
 

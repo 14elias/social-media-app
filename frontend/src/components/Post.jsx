@@ -21,6 +21,7 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
     const [replies, setReplies] = useState({});
     const [loadingRepliesFor, setLoadingRepliesFor] = useState(true);
     const [showReplies, setShowReplies] = useState(false);
+    const [commentLikes, setCommentLikes] = useState({});
 
     const navigate = useNavigate();
     const user_data = JSON.parse(localStorage.getItem("userdata"));
@@ -46,6 +47,17 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
     const loadComments = async () => {
         const data = await fetch_comments(id);
         setComments(data);
+    
+        // Initialize like state from backend
+        const initialLikes = {};
+        data.forEach((comment) => {
+            initialLikes[comment.id] = {
+                liked: comment.liked,
+                like_count: comment.like_count,
+                pending: false,
+            };
+        });
+        setCommentLikes(initialLikes);
     };
 
     const handleCommentSubmit = async () => {
@@ -79,13 +91,35 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
         navigate(`/${username}`);
     };
 
-    const handleCommentLike = async (commentId) => {
-        const data = await toggle_comment_like(id, commentId);
-        setComments(
-            comments.map((comment) =>
-                comment.id === commentId ? { ...comment, liked: data.liked, like_count: data.like_count } : comment
-            )
-        );
+    useEffect(() => {
+        const syncLikesWithServer = async () => {
+            for (const commentId in commentLikes) {
+                if (commentLikes[commentId].pending) {
+                    const data = await toggle_comment_like(id, commentId);
+                    setCommentLikes((prevLikes) => ({
+                        ...prevLikes,
+                        [commentId]: { liked: data.liked, like_count: data.like_count, pending: false },
+                    }));
+                }
+            }
+        };
+        syncLikesWithServer();
+    }, [commentLikes]);
+
+    const handleCommentLike = (commentId) => {
+        setCommentLikes((prevLikes) => {
+            const currentLiked = prevLikes[commentId]?.liked || false;
+            const currentLikeCount = prevLikes[commentId]?.like_count || 0;
+    
+            return {
+                ...prevLikes,
+                [commentId]: {
+                    liked: !currentLiked,
+                    like_count: currentLiked ? currentLikeCount - 1 : currentLikeCount + 1,
+                    pending: true, // Mark as pending for sync
+                },
+            };
+        });
     };
 
     const handleReplySubmit = async (commentId) => {
@@ -100,9 +134,8 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
     };
 
     const loadReplies = async (commentId) => {
-        setShowReplies(!showReplies);
-        if (showReplies) {
-            if (replies[commentId]) return; // Don't reload if already loaded
+        if (!showReplies) { 
+            if (replies[commentId]) return;
             setLoadingRepliesFor(commentId);
             const data = await get_comment_reply(id, commentId);
             setReplies((prevReplies) => ({
@@ -111,7 +144,9 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
             }));
             setLoadingRepliesFor(false);
         }
+        setShowReplies(!showReplies);
     };
+    
 
     const toggleReplyInput = (commentId) => {
         setReplyingToCommentId((prevId) => (prevId === commentId ? null : commentId));
@@ -273,18 +308,13 @@ function Post({ id, username, description, formatted_data, likes_count, liked, p
                                                 <Text>{comment.text}</Text>
                                                 <HStack mt="1" spacing="3">
                                                     <IconButton
-                                                        icon={
-                                                            comment.liked ? (
-                                                                <AiFillHeart color="red" />
-                                                            ) : (
-                                                                <AiOutlineHeart />
-                                                            )
-                                                        }
+                                                        icon={commentLikes[comment.id]?.liked ? <AiFillHeart color="red" /> : <AiOutlineHeart />}
                                                         size="xs"
                                                         cursor="pointer"
                                                         onClick={() => handleCommentLike(comment.id)}
                                                     />
-                                                    <Text fontSize="xs">{comment.like_count} Likes</Text>
+                                                    <Text fontSize="xs">{commentLikes[comment.id]?.like_count} Likes</Text>
+
                                                     <IconButton
                                                         icon={<BiReply size="16px" color="gray" />}
                                                         size="xs"
