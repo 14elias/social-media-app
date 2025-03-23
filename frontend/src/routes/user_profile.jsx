@@ -63,7 +63,6 @@ import {
       const fetchdata = async () => {
         try {
           const data = await get_user_profile_data(username);
-          console.log("API Response:", data); // Debugging
           setBio(data.bio);
           setProfileImage(data.profile_image);
           setFollowerCount(data.follower_count);
