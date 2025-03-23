@@ -322,7 +322,7 @@ class CommentLikeToggle(APIView):
     permission_classes=[IsAuthenticated]
     def post(self,request,*args,**kwargs):
         post=Post.objects.get(id=self.kwargs['pk'])
-        comment=post.comments.get(id=self.kwargs['comment-Id'])
+        comment=post.comments.get(id=self.kwargs['comment_id'])
         if request.user in comment.like.all():
             comment.like.remove(request.user)
             return Response({'liked':False})
